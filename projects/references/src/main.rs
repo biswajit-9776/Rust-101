@@ -4,12 +4,19 @@ fn main() {
     func(&mut s0);
     println!("{}", s0);
 
-    // Cannot borrow a variable as immutable and mutable at same time
+    // Cannot have mutable borrows more than once in a lifetime
     // i.e, we can't use the reference and variable in same scope
     let mut s1 = String::from("hello1");
     let r1 = &mut s1; // here borrowed as mutable
-    r1.push_str(", world!");
-    s1.clear(); // here borrowed as immutable
+    r1.push_str(", world!"); // here the lifetime of the mutable borrow ends
+    s1.clear(); // here borrowed as mutable
+    // r1.push_str("efe"); // here first borrow is used again so error occurs
+
+    // This code still runs as lifetime of word finishes before s1.clear() as it's not used anywhere else
+    let mut s1 = String::from("hello world");
+    let word = first_word(&s1);
+    assert_eq!(word.chars().nth(0), Some('h'));
+    s1.clear();
 
     let s1 = String::from("hello1");
     let r1 = &s1[..]; // here borrowed as mutable
@@ -63,4 +70,13 @@ fn main() {
 }
 fn func(some_string: &mut String) {
     some_string.push_str(", world!");
+}
+fn first_word(s: &String) -> &str {
+    let bytes = s.as_bytes();
+    for (i, &item) in bytes.iter().enumerate() {
+        if item == b' ' {
+            return &s[0..i];
+        }
+    }
+    &s[..]
 }
