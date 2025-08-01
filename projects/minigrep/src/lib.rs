@@ -27,12 +27,24 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new(args: &[String]) -> Result<Config, &'static str> {
+    pub fn new(mut args: env::Args) -> Result<Config, &'static str> {
         if args.len() < 3 {
             return Err("Not enough arguments passed!");
         }
-        let query = args[1].clone();
-        let file = args[2].clone();
+        args.next();
+        let query = match args.next() {
+            Some(s) => s,
+            None => {
+                return Err("No query string provided!");
+            }
+        };
+        let file = match args.next() {
+            Some(f) => f,
+            None => {
+                return Err("No file string provided!");
+            }
+        };
+
         let case_sensitive = env::var("CASE_INSENSITIVE").is_err();
         Ok(Config {
             query,
@@ -43,13 +55,10 @@ impl Config {
 }
 
 fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    let mut results: Vec<&str> = Vec::new();
-    for line in contents.lines() {
-        if line.contains(query) {
-            results.push(line);
-        }
-    }
-    return results;
+    contents
+        .lines()
+        .filter(|line| line.contains(query))
+        .collect()
 }
 
 fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
