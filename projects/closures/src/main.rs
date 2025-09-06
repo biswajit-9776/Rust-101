@@ -16,6 +16,12 @@ fn main() {
     for (i, j) in z {
         println!("i: {}, j: {}", i, j);
     }
+
+    let z = vec![1, 2, 3];
+    let y = || {
+        println!("This is a closure with argument: {:?}", z);
+    };
+    y();
 }
 fn generate_workout(intensity: u32, random_number: u32) {
     // let mut expensive_result = Cacher::new(|x| {
